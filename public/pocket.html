@@ -310,7 +310,7 @@ body::before{
 }
 .s1-phone-frame{
   position: relative;
-  width: clamp(260px, 28vw, 340px);
+  width: clamp(240px, 26vw, 320px);
   z-index: 1;
   transition: transform 400ms cubic-bezier(.22,.78,.18,1);
 }
@@ -325,14 +325,13 @@ body::before{
 }
 .s1-phone-screen{
   position: absolute;
-  top: 4.8%;
-  left: 14.2%;
-  width: 71.6%;
-  height: 86%; /* Slightly increased height */
+  top: 5%;
+  left: 5.8%;
+  width: 88.4%;
+  height: 91.9%;
   background: #fff;
-  border-radius: 22px; /* Slightly adjusted radius */
+  border-radius: 40px;
   overflow: hidden;
-  transform: rotate(1.8deg);
   mask-image: -webkit-radial-gradient(white, black);
   z-index: 2;
 }
@@ -861,9 +860,9 @@ body::before{
   }
   .s1-headline{ font-size: clamp(38px, 11vw, 72px); }
   .s1-sub{ font-size: 15px; }
-  .s1-phone-frame{ width: 230px; margin: 10px auto; }
-  .s1-phone-tag{ font-size: 8px; top: 10px; left: 10px; }
-  .s1-bottom{ grid-template-columns: 1fr; gap: 14px; padding-top: 24px; }
+  .s1-phone-frame{ width: 220px; margin: 10px auto; }
+  .s1-phone-tag{ font-size: 8px; top: 12px; left: 16px; }
+  .s1-bottom{ grid-template-columns: 1fr; gap: 14px; padding-top: 24px; margin-top: 10px; }
   .s1-stat{
     padding-right: 0;
     padding-bottom: 12px;
@@ -961,7 +960,7 @@ body::before{
 
       <div class="s1-phone reveal d4" aria-hidden="true">
         <div class="s1-phone-frame">
-          <img src="assets/hero.webp" class="s1-phone-bg" alt="" />
+          <img src="assets/moldura3.png" class="s1-phone-bg" alt="" />
           <div class="s1-phone-screen">
             <video
               src="assets/demo-app.mp4"
