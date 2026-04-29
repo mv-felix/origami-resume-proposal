@@ -854,28 +854,25 @@ body::before{
   .skip-link{ top: 18px; font-size: 9px; padding: 6px 10px; }
   .skip-link svg{ width: 9px; height: 9px; }
 
-  .slide{ padding: 70px var(--pad-x) 110px; }
-
+  .slide{ padding: 60px var(--pad-x) 80px; }
 
   /* Slide 1 */
-  .s1{ gap: 24px; }
+  .s1{ gap: 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .s1-main{
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 20px;
   }
-  .s1-headline{ font-size: clamp(38px, 11vw, 72px); }
-  .s1-sub{ font-size: 15px; }
-  .s1-phone{ min-height: 440px; display: flex; align-items: center; padding: 20px 0; }
-  .s1-phone-frame{ width: 220px; margin: 0 auto; }
+  .s1-headline{ font-size: clamp(32px, 9vw, 56px); line-height: 1.1; }
+  .s1-sub{ font-size: 14px; margin-top: 12px; }
+  .s1-phone{ min-height: 340px; padding: 10px 0; }
+  .s1-phone-frame{ width: 190px; margin: 0 auto; }
   .s1-phone-tag{ font-size: 8px; top: 12px; left: 16px; z-index: 20; }
   .s1-bottom{ 
     grid-template-columns: 1fr; 
-    gap: 16px; 
-    padding: 40px 0; 
-    margin-top: 40px;
-    position: relative;
-    z-index: 5;
-    background: var(--bg);
+    gap: 12px; 
+    padding: 24px 0; 
+    margin-top: 20px;
+    border-top: 1px solid var(--border);
   }
   .s1-stat{
     padding-right: 0;
