@@ -854,25 +854,54 @@ body::before{
   .skip-link{ top: 18px; font-size: 9px; padding: 6px 10px; }
   .skip-link svg{ width: 9px; height: 9px; }
 
-  .slide{ padding: 60px var(--pad-x) 80px; }
+  html, body{ height: 100%; overflow: hidden; }
+  .deck{ height: 100%; overflow: hidden; position: relative; }
+  .slide{ 
+    position: absolute; 
+    inset: 0;
+    height: 100%; 
+    padding: 60px var(--pad-x) 40px; 
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+  }
 
   /* Slide 1 */
-  .s1{ gap: 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .s1-main{
-    grid-template-columns: 1fr;
-    gap: 20px;
+  /* Slide 1 - Force Block Flow to kill Grid/Flex impacts */
+  .s1{ 
+    display: block !important; 
+    height: auto !important; 
+    gap: 0 !important;
+    overflow-y: auto !important;
   }
-  .s1-headline{ font-size: clamp(32px, 9vw, 56px); line-height: 1.1; }
-  .s1-sub{ font-size: 14px; margin-top: 12px; }
-  .s1-phone{ min-height: 340px; padding: 10px 0; }
-  .s1-phone-frame{ width: 190px; margin: 0 auto; }
+  .s1-main{
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    gap: 0 !important;
+  }
+  .s1-headline{ font-size: 38px !important; line-height: 1.1 !important; margin-bottom: 12px !important; }
+  .s1-sub{ font-size: 14px !important; margin-bottom: 30px !important; line-height: 1.5 !important; display: block !important; }
+  .s1-phone{ 
+    width: 100% !important;
+    margin: 30px 0 !important;
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    position: relative !important;
+    text-align: center !important;
+  }
+  .s1-phone-frame{ width: 200px !important; margin: 0 auto !important; display: inline-block !important; }
   .s1-phone-tag{ font-size: 8px; top: 12px; left: 16px; z-index: 20; }
   .s1-bottom{ 
-    grid-template-columns: 1fr; 
-    gap: 12px; 
-    padding: 24px 0; 
-    margin-top: 20px;
-    border-top: 1px solid var(--border);
+    display: block !important;
+    padding: 30px 0 !important; 
+    margin-top: 40px !important;
+    border-top: 1px solid var(--accent-line) !important;
+    background: transparent !important;
+    height: auto !important;
   }
   .s1-stat{
     padding-right: 0;
