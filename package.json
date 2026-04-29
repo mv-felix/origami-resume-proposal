@@ -1,0 +1,14 @@
+{
+  "name": "origamipay-pitch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OrigamiPay Pitch Deck — apresentação comercial para sellers e e-commerces",
+  "scripts": {
+    "dev": "npx serve public -p 3000",
+    "start": "npx serve public -p 3000",
+    "build": "echo 'Static site — no build step needed'"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

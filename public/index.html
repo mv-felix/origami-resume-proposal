@@ -1,0 +1,3780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OrigamiPay — Pitch · 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg: #060606;
+  --bg-1: #0C0C0C;
+  --bg-2: #131313;
+  --surface: #1A1A1A;
+  --surface-2: #222222;
+  --border: rgba(255,255,255,0.08);
+  --border-2: rgba(255,255,255,0.16);
+  --border-3: rgba(255,255,255,0.28);
+  --text: #F4F4F4;
+  --text-2: #B5B5B5;
+  --text-3: #7A7A7A;
+  --text-4: #5A5A5A;
+  --accent: #7DD837;
+  --accent-2: #9EFF45;
+  --accent-glow: rgba(125, 216, 55, 0.55);
+  --accent-soft: rgba(125, 216, 55, 0.10);
+  --accent-line: rgba(125, 216, 55, 0.35);
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Menlo', 'Monaco', monospace;
+
+  --pad-x: clamp(40px, 5.5vw, 96px);
+  --pad-y-top: clamp(72px, 7.5vh, 100px);
+  --pad-y-bot: clamp(60px, 6.5vh, 90px);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{
+  height:100%;
+  overflow:hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 400;
+  letter-spacing: -0.011em;
+}
+img{ max-width:100%; display:block; }
+button{ font-family: inherit; }
+
+/* Subtle grain */
+body::before{
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.85 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: overlay;
+  opacity: 0.045;
+}
+
+/* Ambient orbs */
+.ambient{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.ambient::before, .ambient::after{
+  content: "";
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+  filter: blur(120px);
+  opacity: 0.10;
+}
+.ambient::before{ top: -300px; right: -200px; }
+.ambient::after{ bottom: -300px; left: -200px; opacity: 0.06; }
+
+/* Deck */
+.deck{
+  position: relative;
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+  z-index: 1;
+}
+.slide{
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  padding: var(--pad-y-top) var(--pad-x) var(--pad-y-bot);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translate3d(40px, 0, 0);
+  pointer-events: none;
+  transition: opacity 700ms cubic-bezier(.22,.78,.18,1), transform 700ms cubic-bezier(.22,.78,.18,1);
+  background: var(--bg);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.slide.active{
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  pointer-events: auto;
+}
+.slide.prev{ transform: translate3d(-40px, 0, 0); }
+
+/* Persistent chrome */
+.chrome{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px var(--pad-x);
+  z-index: 100;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(6,6,6,0.95) 0%, transparent 100%);
+}
+.chrome-logo{
+  height: 24px;
+  width: auto;
+  background: transparent;
+  filter: drop-shadow(0 0 16px rgba(125, 216, 55, 0.20));
+}
+.chrome-meta{
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* Footer / progress / nav */
+.progress{
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 18px var(--pad-x);
+  z-index: 100;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+  background: linear-gradient(0deg, rgba(6,6,6,0.95) 0%, transparent 100%);
+}
+.progress-bar{
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.progress-bar::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+  transform-origin: left;
+  transform: scaleX(var(--p, 0.111));
+  transition: transform 700ms cubic-bezier(.22,.78,.18,1);
+}
+.progress-counter{
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.progress-counter strong{
+  font-weight: 600;
+  color: var(--text);
+  font-size: 13px;
+}
+.progress-counter span{ color: var(--text-4); }
+.progress-nav{
+  pointer-events: auto;
+  display: flex;
+  gap: 10px;
+}
+.progress-nav button{
+  width: 38px; height: 38px;
+  background: transparent;
+  border: 1px solid var(--border-2);
+  border-radius: 50%;
+  color: var(--text);
+  cursor: pointer;
+  display: grid; place-items: center;
+  transition: all 220ms cubic-bezier(.22,.78,.18,1);
+}
+.progress-nav button:hover{
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+  transform: scale(1.05);
+}
+.progress-nav svg{ width: 13px; height: 13px; stroke-width: 2; }
+
+/* ---- Shared typography ---- */
+.eyebrow{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.eyebrow::before{
+  content: "";
+  width: 24px; height: 1px;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+.eyebrow strong{
+  color: var(--accent);
+  font-weight: 700;
+  text-shadow: 0 0 16px rgba(125, 216, 55, 0.45);
+}
+
+.display{
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.96;
+  color: var(--text);
+}
+.display em{
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  text-shadow: 0 0 32px rgba(125, 216, 55, 0.35);
+}
+.display .muted{ color: var(--text-3); }
+
+.body{
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-2);
+  font-weight: 400;
+  max-width: 56ch;
+}
+
+/* Animations */
+.slide.active .fade-up{ animation: fadeUp 900ms cubic-bezier(.22,.78,.18,1) both; }
+.slide.active .fade-up.d1{ animation-delay: 80ms; }
+.slide.active .fade-up.d2{ animation-delay: 200ms; }
+.slide.active .fade-up.d3{ animation-delay: 320ms; }
+.slide.active .fade-up.d4{ animation-delay: 440ms; }
+.slide.active .fade-up.d5{ animation-delay: 560ms; }
+.slide.active .fade-up.d6{ animation-delay: 680ms; }
+.slide.active .fade-up.d7{ animation-delay: 800ms; }
+@keyframes fadeUp{
+  from{ opacity:0; transform: translate3d(0, 18px, 0); }
+  to{ opacity:1; transform: translate3d(0, 0, 0); }
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SLIDE 01 — COVER                                                 */
+/* ═══════════════════════════════════════════════════════════════ */
+.s1{
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 0 clamp(24px, 4vw, 64px);
+  align-items: end;
+  position: relative;
+}
+.s1::before{
+  content: "";
+  position: absolute;
+  top: 8%; right: -8%;
+  width: 70%; height: 80%;
+  background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 65%);
+  filter: blur(80px);
+  opacity: 0.18;
+  z-index: -1;
+}
+.s1-headline{
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+  padding-bottom: 4vh;
+  max-width: 820px;
+}
+.s1-eyebrow{ margin-bottom: 28px; }
+.s1-display{
+  font-size: clamp(54px, 6.4vw, 104px);
+  letter-spacing: -0.045em;
+  line-height: 0.94;
+  margin-bottom: 28px;
+  font-weight: 800;
+}
+.s1-sub{
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--text-2);
+  max-width: 50ch;
+  font-weight: 400;
+}
+.s1-sub .pill{
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid var(--accent-line);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+.s1-hero{
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+}
+.s1-hero-frame{
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.s1-hero-frame::before{
+  content: "";
+  position: absolute;
+  inset: 18% 5% 18% 5%;
+  background: radial-gradient(ellipse at center, rgba(125,216,55,0.20) 0%, transparent 70%);
+  filter: blur(40px);
+  z-index: 0;
+}
+.s1-hero-frame img{
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  max-height: 62vh;
+  object-fit: contain;
+  filter: drop-shadow(0 40px 80px rgba(0,0,0,0.5));
+}
+.s1-tag{
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  border: 1px solid var(--border-2);
+  background: rgba(13, 13, 13, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 6px;
+  color: var(--text-2);
+  z-index: 2;
+}
+.s1-tag.t1{
+  top: 14%; left: -2%;
+  border-color: var(--accent-line);
+  color: var(--accent);
+  box-shadow: 0 0 24px rgba(125, 216, 55, 0.15);
+}
+.s1-tag.t2{ bottom: 22%; right: -3%; }
+.s1-tag.t1::before{
+  content: "●";
+  margin-right: 8px;
+  color: var(--accent);
+  text-shadow: 0 0 8px var(--accent-glow);
+}
+.s1-foot{
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.s1-foot strong{ color: var(--text); font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SLIDE 02 — PROBLEMA                                              */
+/* ═══════════════════════════════════════════════════════════════ */
+.s2{
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(36px, 5vh, 56px);
+}
+.s2-top{
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 48px;
+  align-items: end;
+}
+.s2-headline{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(48px, 6.4vw, 100px);
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+  max-width: 14ch;
+  margin-top: 16px;
+}
+.s2-headline em{
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  text-shadow: 0 0 30px rgba(125, 216, 55, 0.35);
+}
+.s2-stat{
+  text-align: right;
+  border-left: 1px solid var(--border);
+  padding-left: 32px;
+  padding-bottom: 8px;
+}
+.s2-stat-num{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(96px, 13vw, 200px);
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+  color: var(--text);
+}
+.s2-stat-num em{
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+  text-shadow: 0 0 30px rgba(125, 216, 55, 0.35);
+}
+.s2-stat-label{
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 14px;
+  max-width: 32ch;
+  margin-left: auto;
+  line-height: 1.6;
+}
+.s2-problems{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--accent-line);
+  border-bottom: 1px solid var(--border);
+}
+.s2-problem{
+  padding: 36px 32px 32px;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+.s2-problem:last-child{ border-right: none; }
+.s2-problem-num{
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-style: italic;
+  font-size: 48px;
+  line-height: 1;
+  color: var(--accent);
+  letter-spacing: -0.03em;
+  margin-bottom: 24px;
+  display: block;
+  text-shadow: 0 0 24px rgba(125, 216, 55, 0.3);
+}
+.s2-problem-title{
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.s2-problem-body{
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  max-width: 36ch;
+}
+.s2-foot{
+  display: flex;
+  justify-content: flex-end;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.s2-foot strong{ color: var(--text); font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SLIDE 03 — A DIFERENÇA: PIX CONSIGNADO                           */
+/* ═══════════════════════════════════════════════════════════════ */
+.s3{
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: clamp(20px, 2.4vh, 32px);
+}
+.s3-statement{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(48px, 6.2vw, 96px);
+  letter-spacing: -0.045em;
+  line-height: 1.04;
+  max-width: 18ch;
+  margin-top: 4px;
+  padding-bottom: 14px;
+}
+.s3-statement em{
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+  text-shadow: 0 0 32px rgba(125, 216, 55, 0.4);
+  display: inline-block;
+  padding-bottom: 0.04em;
+}
+.s3-sub{
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-2);
+  max-width: 56ch;
+  margin-top: -4px;
+}
+.s3-compare{
+  display: grid;
+  grid-template-columns: 1fr 56px 1fr;
+  gap: 0;
+  align-items: stretch;
+  border-top: 1px solid var(--accent-line);
+  padding-top: 28px;
+}
+.s3-side{
+  padding: 0 32px 0 0;
+  display: flex;
+  flex-direction: column;
+}
+.s3-side.right{
+  padding: 0 0 0 32px;
+  border-left: 1px solid var(--accent-line);
+  position: relative;
+}
+.s3-side.right::after{
+  content: "";
+  position: absolute;
+  left: -1px; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, var(--accent) 0%, transparent 100%);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+.s3-side-tag{
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 14px;
+}
+.s3-side.right .s3-side-tag{ color: var(--accent); }
+.s3-side-title{
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin-bottom: 18px;
+}
+.s3-side-list{
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.s3-side-list li{
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  position: relative;
+  padding-left: 26px;
+}
+.s3-side-list li::before{
+  content: "—";
+  color: var(--text-4);
+  font-family: var(--font-mono);
+  position: absolute;
+  left: 0;
+  top: 0;
+  line-height: 1.6;
+}
+.s3-side.right .s3-side-list li{ color: var(--text); }
+.s3-side.right .s3-side-list li::before{
+  content: "+";
+  color: var(--accent);
+  font-weight: 700;
+  text-shadow: 0 0 8px var(--accent-glow);
+}
+.s3-arrow{
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.s3-arrow svg{
+  width: 100%;
+  height: 24px;
+  color: var(--accent);
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+.s3-context{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--border);
+  padding-top: 22px;
+}
+.s3-context-stat{
+  border-right: 1px solid var(--border);
+  padding-right: 24px;
+}
+.s3-context-stat:last-child{ border-right: none; padding-right: 0; }
+.s3-context-num{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(30px, 3.4vw, 48px);
+  line-height: 1;
+  color: var(--text);
+  letter-spacing: -0.04em;
+}
+.s3-context-num em{
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+  text-shadow: 0 0 20px rgba(125, 216, 55, 0.3);
+}
+.s3-context-num small{
+  font-size: 0.42em;
+  color: var(--text-3);
+  font-weight: 500;
+  font-style: italic;
+  margin-left: 6px;
+  letter-spacing: 0;
+}
+.s3-context-label{
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1.55;
+  margin-top: 10px;
+  max-width: 28ch;
+}
+.s3-foot{
+  display: flex;
+  justify-content: flex-end;
+  align-items: end;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SLIDE 04 — COMO FUNCIONA                                         */
+/* ═══════════════════════════════════════════════════════════════ */
+.s4{
+  display: grid;
+  grid-template-columns: 0.85fr 1fr;
+  gap: clamp(36px, 4.5vw, 72px);
+}
+.s4-left{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-right: 8px;
+}
+.s4-title{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(48px, 6.4vw, 100px);
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+  margin-top: 12px;
+  max-width: 12ch;
+}
+.s4-title em{ color: var(--accent); font-style: italic; font-weight: 700; text-shadow: 0 0 28px rgba(125,216,55,0.35); }
+.s4-pix-pill{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 10px;
+  background: var(--accent);
+  color: #000;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 20px;
+  box-shadow: 0 0 32px rgba(125, 216, 55, 0.35);
+}
+.s4-pix-pill::before{
+  content: "";
+  width: 6px; height: 6px;
+  background: #000;
+  border-radius: 50%;
+}
+.s4-steps{ margin-top: 24px; }
+.s4-step{
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+  align-items: baseline;
+}
+.s4-step:last-child{ border-bottom: 1px solid var(--border); }
+.s4-step-num{
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-style: italic;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--text-2);
+  letter-spacing: -0.03em;
+}
+.s4-step-title{
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+  letter-spacing: -0.015em;
+}
+.s4-step-desc{
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-2);
+  max-width: 42ch;
+}
+.s4-step-time{
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  align-self: center;
+  white-space: nowrap;
+}
+/* Phone mockups — 2 phones, side by side */
+.s4-right{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: visible;
+}
+.s4-phones{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 2.5vw, 40px);
+}
+.s4-phones::before{
+  content: "";
+  position: absolute;
+  inset: 8% 4% 8% 4%;
+  background: radial-gradient(ellipse at center, rgba(125,216,55,0.18) 0%, transparent 65%);
+  filter: blur(50px);
+  z-index: 0;
+  pointer-events: none;
+}
+.phone{
+  width: clamp(220px, 24vw, 340px);
+  aspect-ratio: 9 / 19.5;
+  background: #1a1a1a;
+  border: 2px solid #2a2a2a;
+  border-radius: 36px;
+  padding: 8px;
+  box-shadow:
+    0 30px 60px -20px rgba(0,0,0,0.8),
+    0 0 0 1px rgba(255,255,255,0.06),
+    inset 0 0 0 1px rgba(0,0,0,0.6);
+  transition: transform 320ms cubic-bezier(.22,.78,.18,1);
+  position: relative;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.phone-screen{
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: 28px;
+  overflow: hidden;
+  position: relative;
+  display: block;
+}
+.phone-screen img,
+.phone-screen video{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+.phone-screen video{
+  background: #000;
+}
+.phone-live-tag{
+  position: absolute;
+  top: 14px;
+  left: 12px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 5px 9px;
+  border-radius: 4px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.phone-live-tag::before{
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent-glow);
+  animation: pulse-live 1.6s ease-in-out infinite;
+}
+@keyframes pulse-live{
+  0%, 100%{ opacity: 1; transform: scale(1); }
+  50%{ opacity: 0.5; transform: scale(0.85); }
+}
+.phone-notch{
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64px;
+  height: 20px;
+  background: #1a1a1a;
+  border-radius: 0 0 14px 14px;
+  z-index: 2;
+}
+.phone.p-left{ transform: rotate(-3deg); }
+.phone.p-right{
+  transform: rotate(3deg);
+  box-shadow:
+    0 40px 80px -20px rgba(0,0,0,0.9),
+    0 0 0 1px var(--accent-line),
+    0 0 60px rgba(125, 216, 55, 0.20),
+    inset 0 0 0 1px rgba(0,0,0,0.6);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SLIDE 05 — VANTAGENS                                             */
+/* ═══════════════════════════════════════════════════════════════ */
+.s5{
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(32px, 4.5vh, 56px);
+}
+.s5-top{
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 48px;
+  align-items: end;
+}
+.s5-title{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(48px, 6.4vw, 100px);
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+  max-width: 18ch;
+  margin-top: 16px;
+}
+.s5-title em{ color: var(--accent); font-style: italic; font-weight: 700; text-shadow: 0 0 28px rgba(125,216,55,0.35); }
+.s5-source{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1.6;
+  border-left: 1px solid var(--accent-line);
+  padding-left: 20px;
+  max-width: 38ch;
+}
+.s5-source strong{ color: var(--accent); font-weight: 700; }
+.s5-grid{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--accent-line);
+  border-bottom: 1px solid var(--border);
+}
+.s5-card{
+  padding: 30px 26px 26px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  min-height: 290px;
+  background: transparent;
+  transition: background 220ms;
+}
+.s5-card:last-child{ border-right: none; }
+.s5-card:hover{
+  background: linear-gradient(180deg, var(--accent-soft) 0%, transparent 100%);
+}
+.s5-card-tag{
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.s5-card-stat{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(64px, 8.4vw, 116px);
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+  color: var(--text);
+  margin: 22px 0;
+}
+.s5-card-stat .unit{
+  font-size: 0.42em;
+  letter-spacing: -0.01em;
+  color: var(--text-3);
+  font-weight: 700;
+}
+.s5-card-title{
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -0.015em;
+}
+.s5-card-body{
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+.s5-card.featured .s5-card-stat{
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+  text-shadow: 0 0 32px rgba(125, 216, 55, 0.45);
+}
+.s5-card.featured .s5-card-stat .unit{
+  color: var(--accent);
+  opacity: 0.55;
+  text-shadow: none;
+}
+.s5-card-source{
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin-top: 10px;
+}
+.s5-foot{
+  display: flex;
+  justify-content: flex-end;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.s5-foot strong{ color: var(--text); font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SLIDE 06 — CALCULADORA                                           */
+/* ═══════════════════════════════════════════════════════════════ */
+.s6{
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(24px, 3vh, 36px);
+}
+.s6-top{
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 48px;
+  align-items: end;
+}
+.s6-title{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(48px, 6.4vw, 96px);
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+  max-width: 14ch;
+  margin-top: 12px;
+}
+.s6-title em{ color: var(--accent); font-style: italic; font-weight: 700; text-shadow: 0 0 28px rgba(125,216,55,0.35); }
+.s6-intro{
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  max-width: 40ch;
+  border-left: 1px solid var(--accent-line);
+  padding-left: 20px;
+  padding-bottom: 8px;
+}
+.s6-calc{
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-1);
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6), 0 0 80px -30px rgba(125,216,55,0.20);
+}
+.s6-inputs{
+  padding: 24px 28px;
+  border-right: 1px solid var(--border);
+  background: var(--bg-1);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.s6-inputs-head{
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.s6-inputs-head .live-tag{
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.s6-inputs-head .live-tag::before{
+  content:"";
+  width:5px; height:5px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent-glow);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{ opacity:1; transform: scale(1); }
+  50%{ opacity: 0.45; transform: scale(0.85); }
+}
+.s6-input{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.s6-input-label{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.s6-input-name{
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.005em;
+}
+.s6-input-value{
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(125, 216, 55, 0.35);
+  letter-spacing: 0.02em;
+}
+.s6-input input[type=range]{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 2px;
+  outline: none;
+}
+.s6-input input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 0 4px rgba(125, 216, 55, 0.18), 0 0 18px var(--accent-glow);
+  transition: transform 120ms;
+}
+.s6-input input[type=range]::-webkit-slider-thumb:hover{ transform: scale(1.15); }
+.s6-input input[type=range]::-moz-range-thumb{
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 0 4px rgba(125, 216, 55, 0.18), 0 0 18px var(--accent-glow);
+}
+.s6-input-range{
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--text-4);
+  text-transform: uppercase;
+}
+.s6-rate-note{
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.s6-rate-note-label{
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.s6-rate-note-val{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(125, 216, 55, 0.25);
+}
+
+.s6-outputs{
+  padding: 24px 28px;
+  background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+.s6-outputs::before{
+  content: "";
+  position: absolute;
+  top: 0; right: 0;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+  filter: blur(60px);
+  opacity: 0.20;
+  pointer-events: none;
+}
+.s6-outputs-head{
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+.s6-output{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 16px;
+  padding: 4px 0;
+  position: relative;
+  z-index: 1;
+}
+.s6-output-label{
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--text-2);
+  font-weight: 400;
+  line-height: 1.4;
+}
+.s6-output-label small{
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--text-4);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.s6-output-val{
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.005em;
+  text-align: right;
+  white-space: nowrap;
+}
+.s6-output.total{
+  margin-top: 6px;
+  padding-top: 16px;
+  border-top: 1px solid var(--accent-line);
+  align-items: end;
+}
+.s6-output.total .s6-output-label{
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.s6-output.total .s6-output-val{
+  font-family: var(--font-display);
+  font-size: clamp(36px, 4vw, 56px);
+  font-weight: 800;
+  font-style: italic;
+  color: var(--accent);
+  letter-spacing: -0.04em;
+  text-shadow: 0 0 32px rgba(125, 216, 55, 0.45);
+  line-height: 0.95;
+}
+.s6-output.uplift{ position: relative; z-index: 1; }
+.s6-uplift-bar{
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 2px;
+  margin: 4px 0;
+  position: relative;
+  overflow: hidden;
+}
+.s6-uplift-bar::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+  border-radius: 2px;
+  transform-origin: left;
+  transform: scaleX(var(--up, 0));
+  transition: transform 600ms cubic-bezier(.22,.78,.18,1);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+.s6-uplift-pct{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 12px rgba(125, 216, 55, 0.35);
+}
+.s6-foot{
+  display: flex;
+  justify-content: flex-end;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.s6-foot strong{ color: var(--text); font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SLIDE 07 — SEGURANÇA & PARCEIROS                                 */
+/* ═══════════════════════════════════════════════════════════════ */
+.s7{
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(28px, 4vh, 44px);
+}
+.s7-headline{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(54px, 7vw, 110px);
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+  max-width: 18ch;
+  margin-top: 8px;
+}
+.s7-headline em{ color: var(--accent); font-style: italic; font-weight: 700; text-shadow: 0 0 32px rgba(125,216,55,0.35); }
+.s7-frame{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  border-top: 1px solid var(--accent-line);
+  padding-top: 28px;
+}
+.s7-pillars{
+  display: flex;
+  flex-direction: column;
+}
+.s7-pillar{
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 18px;
+  align-items: baseline;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.s7-pillar:last-child{ border-bottom: none; }
+.s7-pillar-tag{
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent-line);
+  padding: 4px 8px;
+  border-radius: 3px;
+  text-align: center;
+  white-space: nowrap;
+  background: var(--accent-soft);
+  align-self: start;
+  margin-top: 4px;
+}
+.s7-pillar-title{
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+.s7-pillar-body{
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-2);
+  max-width: 40ch;
+}
+.s7-partners{
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-left: 0;
+}
+.s7-partners-head{
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.s7-partners-grid{
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 8px;
+}
+.s7-partner{
+  background: #FAFAF7;
+  aspect-ratio: 1.4 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 18px;
+  border-radius: 6px;
+  position: relative;
+  transition: transform 220ms cubic-bezier(.22,.78,.18,1), box-shadow 220ms;
+  border: 1px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.s7-partner:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -8px rgba(0,0,0,0.5), 0 0 24px rgba(125, 216, 55, 0.20);
+}
+.s7-partner img{
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+/* Logos with dark/black native backgrounds — give them a black card to blend */
+.s7-partner.dark{
+  background: #0a0a0a;
+  border: 1px solid var(--border-2);
+  padding: 16px 20px;
+}
+.s7-partner.dark img{
+  filter: brightness(1.15) contrast(1.05);
+}
+.s7-numbers{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  padding-top: 6px;
+}
+.s7-number{
+  border-right: 1px solid var(--border);
+  padding-right: 16px;
+}
+.s7-number:last-child{ border-right: none; padding-right: 0; }
+.s7-number-val{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 0.95;
+  color: var(--text);
+  letter-spacing: -0.04em;
+}
+.s7-number-val.accent{
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+  text-shadow: 0 0 18px rgba(125, 216, 55, 0.35);
+}
+.s7-number-val .unit{ font-size: 0.5em; color: var(--text-3); font-weight: 600; }
+.s7-number-tag{
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+.s7-foot{
+  display: flex;
+  justify-content: flex-end;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.s7-foot strong{ color: var(--text); font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SLIDE 08 — INTEGRAÇÃO                                            */
+/* ═══════════════════════════════════════════════════════════════ */
+.s8{
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  gap: clamp(40px, 5vw, 80px);
+  align-items: stretch;
+}
+.s8-left{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.s8-title{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(54px, 7vw, 108px);
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+  max-width: 12ch;
+  margin-top: 8px;
+}
+.s8-title em{ color: var(--accent); font-style: italic; font-weight: 700; text-shadow: 0 0 32px rgba(125,216,55,0.35); }
+.s8-body{
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--text-2);
+  max-width: 44ch;
+  margin-top: 24px;
+}
+.s8-platforms{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 22px;
+}
+.s8-platform{
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 16px 18px;
+  background: var(--bg-1);
+  position: relative;
+}
+.s8-platform.featured{
+  border-color: var(--accent-line);
+  background: linear-gradient(180deg, var(--accent-soft) 0%, transparent 100%);
+  box-shadow: 0 0 32px rgba(125, 216, 55, 0.10);
+}
+.s8-platform-tag{
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.s8-platform.featured .s8-platform-tag{ color: var(--accent); }
+.s8-platform-title{
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 6px;
+  letter-spacing: -0.02em;
+}
+.s8-platform-desc{
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-2);
+  margin-top: 6px;
+}
+.s8-platform-link{
+  display: inline-block;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-line);
+  padding-bottom: 2px;
+}
+.s8-stats{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--accent-line);
+}
+.s8-stat-val{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 44px;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  color: var(--accent);
+  font-style: italic;
+  text-shadow: 0 0 24px rgba(125, 216, 55, 0.35);
+}
+.s8-stat-val.neutral{ color: var(--text); text-shadow: none; font-style: normal; }
+.s8-stat-val .unit{ font-size: 0.5em; font-weight: 700; font-style: normal; }
+.s8-stat-tag{
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 10px;
+  line-height: 1.5;
+  max-width: 22ch;
+}
+.s8-right{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.s8-vtex-window{
+  width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 30px 60px -20px rgba(0,0,0,0.7),
+    0 0 60px -10px rgba(125,216,55,0.12);
+  position: relative;
+}
+.s8-vtex-bar{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+.s8-vtex-dots{ display: flex; gap: 6px; }
+.s8-vtex-dots span{
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--surface-2);
+}
+.s8-vtex-url{
+  flex: 1;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+.s8-vtex-url strong{ color: var(--accent); font-weight: 600; }
+.s8-vtex-body{
+  background: #fff;
+}
+.s8-vtex-body img{ width: 100%; display: block; }
+.s8-vtex-tag{
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  background: var(--accent);
+  color: #000;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 0 24px rgba(125, 216, 55, 0.5);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.s8-vtex-tag::before{
+  content: "✓";
+  font-size: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SLIDE — CLT PROFILE (was 3.5, now slide 04)                      */
+/* ═══════════════════════════════════════════════════════════════ */
+.s-clt{
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(20px, 3vh, 36px);
+}
+.s-clt-top{
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 40px;
+  align-items: end;
+}
+.s-clt-headline{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(40px, 5.4vw, 84px);
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  max-width: 18ch;
+  margin-top: 8px;
+}
+.s-clt-headline em{
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+  text-shadow: 0 0 32px rgba(125, 216, 55, 0.4);
+}
+.s-clt-intro{
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-2);
+  max-width: 40ch;
+  border-left: 1px solid var(--accent-line);
+  padding-left: 20px;
+}
+.s-clt-content{
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: clamp(36px, 4.5vw, 64px);
+  align-items: stretch;
+  border-top: 1px solid var(--accent-line);
+  padding-top: 32px;
+}
+/* Persona card (left) */
+.s-clt-persona{
+  background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  padding: 28px 30px 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.s-clt-persona::before{
+  content: "";
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+  filter: blur(50px);
+  opacity: 0.18;
+  pointer-events: none;
+}
+/* Big typographic "47M" background */
+.s-clt-persona-bg{
+  position: absolute;
+  bottom: -28px;
+  right: -16px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-style: italic;
+  font-size: clamp(180px, 22vw, 320px);
+  line-height: 0.85;
+  color: var(--accent);
+  opacity: 0.07;
+  letter-spacing: -0.06em;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+.s-clt-persona-bg span{
+  font-size: 0.5em;
+  vertical-align: 60%;
+  font-weight: 700;
+}
+.s-clt-persona-header{
+  position: relative;
+  z-index: 1;
+}
+.s-clt-persona-eyebrow{
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 8px;
+}
+.s-clt-persona-name{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(28px, 3.2vw, 44px);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  color: var(--text);
+  margin-top: 4px;
+  position: relative;
+  z-index: 1;
+}
+.s-clt-persona-name em{
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+  text-shadow: 0 0 24px rgba(125, 216, 55, 0.3);
+}
+.s-clt-persona-quote{
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--text-2);
+  border-left: 2px solid var(--accent);
+  padding-left: 14px;
+  letter-spacing: -0.012em;
+  position: relative;
+  z-index: 1;
+}
+.s-clt-persona-meta{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+.s-clt-persona-meta-item .label{
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin-bottom: 4px;
+  display: block;
+}
+.s-clt-persona-meta-item .val{
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+/* Stats grid (right) */
+.s-clt-stats{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 12px;
+}
+.s-clt-stat{
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 22px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: border-color 220ms, background 220ms;
+  position: relative;
+}
+.s-clt-stat:hover{
+  border-color: var(--accent-line);
+  background: linear-gradient(180deg, var(--accent-soft) 0%, var(--bg-1) 100%);
+}
+.s-clt-stat-tag{
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.s-clt-stat-num{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(38px, 4.2vw, 60px);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  color: var(--accent);
+  font-style: italic;
+  text-shadow: 0 0 28px rgba(125, 216, 55, 0.35);
+}
+.s-clt-stat-num.neutral{ color: var(--text); font-style: normal; text-shadow: none; }
+.s-clt-stat-num .unit{
+  font-size: 0.42em;
+  font-weight: 700;
+  font-style: normal;
+  color: var(--text-3);
+}
+.s-clt-stat-desc{
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-2);
+  max-width: 28ch;
+}
+.s-clt-foot{
+  display: flex;
+  justify-content: flex-end;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.s-clt-foot strong{ color: var(--text); font-weight: 600; }
+
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SLIDE — COMPARISON (was 5.5, now slide 07)                       */
+/* ═══════════════════════════════════════════════════════════════ */
+.s-cmp{
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(20px, 3vh, 36px);
+}
+.s-cmp-top{
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 48px;
+  align-items: end;
+}
+.s-cmp-title{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(48px, 6.4vw, 100px);
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+  max-width: 16ch;
+  margin-top: 12px;
+}
+.s-cmp-title em{
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+  text-shadow: 0 0 32px rgba(125, 216, 55, 0.4);
+}
+.s-cmp-intro{
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  max-width: 38ch;
+  border-left: 1px solid var(--accent-line);
+  padding-left: 20px;
+  padding-bottom: 6px;
+}
+.s-cmp-table{
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr 1.05fr;
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-1);
+}
+.s-cmp-h{
+  padding: 18px 22px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border-2);
+  border-right: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.s-cmp-h:last-child{ border-right: none; }
+.s-cmp-h.win{
+  background: linear-gradient(180deg, var(--accent-soft) 0%, transparent 100%);
+  color: var(--accent);
+  border-bottom-color: var(--accent-line);
+}
+.s-cmp-h.win::after{
+  content: "MELHOR";
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  background: var(--accent);
+  color: #000;
+  padding: 3px 7px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+.s-cmp-c{
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+}
+.s-cmp-c:nth-child(4n+1){
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: var(--bg-2);
+}
+.s-cmp-c:nth-child(4n){
+  border-right: none;
+  background: linear-gradient(90deg, transparent 0%, var(--accent-soft) 100%);
+  color: var(--text);
+  font-weight: 500;
+  position: relative;
+}
+.s-cmp-c:nth-child(4n)::before{
+  content: "✓";
+  color: var(--accent);
+  font-weight: 800;
+  margin-right: 10px;
+  text-shadow: 0 0 8px var(--accent-glow);
+  flex-shrink: 0;
+}
+.s-cmp-table > .s-cmp-c:nth-last-child(-n+4){ border-bottom: none; }
+.s-cmp-foot{
+  display: flex;
+  justify-content: flex-end;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.s-cmp-foot strong{ color: var(--text); font-weight: 600; }
+
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SLIDE — VERTICALS (was 8.5, now slide 11)                        */
+/* ═══════════════════════════════════════════════════════════════ */
+.s-vert{
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(28px, 4vh, 44px);
+}
+.s-vert-top{
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 48px;
+  align-items: end;
+}
+.s-vert-title{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(48px, 6.4vw, 100px);
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+  max-width: 18ch;
+  margin-top: 12px;
+}
+.s-vert-title em{
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+  text-shadow: 0 0 32px rgba(125, 216, 55, 0.4);
+}
+.s-vert-intro{
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  max-width: 40ch;
+  border-left: 1px solid var(--accent-line);
+  padding-left: 20px;
+  padding-bottom: 6px;
+}
+.s-vert-grid{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  border-top: 1px solid var(--accent-line);
+  padding-top: 24px;
+}
+.s-vert-card{
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 26px 24px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 220ms, transform 220ms;
+}
+.s-vert-card:hover{
+  border-color: var(--accent-line);
+  transform: translateY(-3px);
+}
+.s-vert-card::before{
+  content: "";
+  position: absolute;
+  top: -50px; right: -50px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+  filter: blur(40px);
+  opacity: 0;
+  transition: opacity 220ms;
+  pointer-events: none;
+}
+.s-vert-card:hover::before{ opacity: 0.20; }
+.s-vert-card-icon{
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+  position: relative;
+  z-index: 1;
+}
+.s-vert-card-icon svg{ width: 28px; height: 28px; stroke-width: 1.4; }
+.s-vert-card-tag{
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  position: relative;
+  z-index: 1;
+}
+.s-vert-card-name{
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.18;
+  position: relative;
+  z-index: 1;
+}
+.s-vert-card-anon{
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  line-height: 1.4;
+  position: relative;
+  z-index: 1;
+}
+.s-vert-card-result{
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+.s-vert-card-num{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(34px, 3.4vw, 48px);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  color: var(--accent);
+  font-style: italic;
+  text-shadow: 0 0 24px rgba(125, 216, 55, 0.35);
+}
+.s-vert-card-num .unit{
+  font-size: 0.42em;
+  font-weight: 700;
+  font-style: normal;
+  color: var(--text-3);
+}
+.s-vert-card-metric{
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+.s-vert-disclaimer{
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  text-align: right;
+  margin-top: -4px;
+}
+.s-vert-foot{
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.s-vert-foot strong{ color: var(--text); font-weight: 600; }
+
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SLIDE 12 — CTA / ENCERRAMENTO                                    */
+/* ═══════════════════════════════════════════════════════════════ */
+.s9{
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: clamp(28px, 4vh, 48px);
+  align-content: start;
+  position: relative;
+}
+.s9::before{
+  content: "";
+  position: absolute;
+  top: 10%; right: 8%;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+  filter: blur(100px);
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Hero CTA + QR */
+.s9-hero{
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: clamp(40px, 5vw, 80px);
+  align-items: center;
+}
+.s9-left{ display: flex; flex-direction: column; gap: 18px; }
+.s9-statement{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(48px, 6.4vw, 100px);
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+  margin-top: 12px;
+}
+.s9-statement em{
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+  text-shadow: 0 0 40px rgba(125, 216, 55, 0.45);
+}
+.s9-sub{
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-2);
+  max-width: 50ch;
+  font-weight: 400;
+}
+.s9-right{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-self: end;
+}
+.s9-qr-frame{
+  background: var(--bg-1);
+  padding: 16px;
+  border: 1px solid var(--accent-line);
+  border-radius: 10px;
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,0.7), 0 0 60px -10px rgba(125,216,55,0.30);
+  position: relative;
+}
+.s9-qr-frame::before{
+  content: "ESCANEIE";
+  position: absolute;
+  top: -10px; left: 18px;
+  background: var(--bg);
+  padding: 0 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+}
+.s9-qr-frame img{
+  width: 180px; height: 180px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.s9-qr-cap{
+  margin-top: 12px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+.s9-qr-cap strong{
+  display: block;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+
+/* Recap stats row */
+.s9-recap{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--accent-line);
+  border-bottom: 1px solid var(--border);
+  padding: 22px 0;
+}
+.s9-recap-stat{
+  padding: 0 28px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.s9-recap-stat:first-child{ padding-left: 0; }
+.s9-recap-stat:last-child{ border-right: none; padding-right: 0; }
+.s9-recap-num{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-style: italic;
+  font-size: clamp(32px, 4vw, 54px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--accent);
+  text-shadow: 0 0 22px rgba(125, 216, 55, 0.35);
+}
+.s9-recap-num.neutral{ color: var(--text); font-style: normal; text-shadow: none; }
+.s9-recap-num .unit{
+  font-size: 0.5em;
+  font-weight: 700;
+  font-style: normal;
+  color: var(--text-3);
+}
+.s9-recap-tag{
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* Footer (contacts + signature) */
+.s9-foot{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 32px;
+  align-items: end;
+}
+.s9-contact-item{ display: flex; flex-direction: column; gap: 6px; }
+.s9-contact-item .label{
+  font-family: var(--font-mono);
+  color: var(--text-4);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.s9-contact-item .val{
+  font-family: var(--font-mono);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+}
+.s9-contact-item .val.accent{ color: var(--accent); text-shadow: 0 0 12px var(--accent-glow); }
+.s9-signature{
+  text-align: right;
+  border-left: 1px solid var(--border);
+  padding-left: 28px;
+}
+.s9-signature-text{
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-2);
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+.s9-signature-mark{
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-top: 8px;
+  text-shadow: 0 0 8px var(--accent-glow);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* HINT                                                              */
+/* ═══════════════════════════════════════════════════════════════ */
+.hint{
+  position: fixed;
+  bottom: 70px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-2);
+  border: 1px solid var(--accent-line);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 10px 18px;
+  border-radius: 999px;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  animation: hintShow 5s ease-in-out 800ms forwards;
+  box-shadow: 0 0 24px rgba(125, 216, 55, 0.18);
+}
+.hint kbd{
+  background: var(--surface-2);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-family: inherit;
+  color: var(--accent);
+  font-weight: 600;
+}
+@keyframes hintShow{
+  0%{ opacity: 0; transform: translateX(-50%) translateY(8px); }
+  10%, 80%{ opacity: 1; transform: translateX(-50%) translateY(0); }
+  100%{ opacity: 0; transform: translateX(-50%) translateY(-8px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* MOBILE & TABLET RESPONSIVE                                       */
+/* ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1023px){
+  :root{
+    --pad-x: clamp(20px, 5vw, 32px);
+    --pad-y-top: 64px;
+    --pad-y-bot: 64px;
+  }
+  .slide{
+    padding: var(--pad-y-top) var(--pad-x) var(--pad-y-bot);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .chrome{ padding: 14px var(--pad-x); }
+  .chrome-logo{ height: 16px; }
+  .chrome-meta{ font-size: 9px; letter-spacing: 0.14em; }
+  .progress{ padding: 12px var(--pad-x); gap: 14px; }
+  .progress-counter strong{ font-size: 11px; }
+  .progress-nav button{ width: 32px; height: 32px; }
+  .progress-nav svg{ width: 11px; height: 11px; }
+
+  /* Slide 1 */
+  .s1{
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    align-items: start;
+    gap: 28px;
+  }
+  .s1-headline{ grid-column: 1; grid-row: 1; padding-bottom: 0; }
+  .s1-display{ font-size: clamp(40px, 11vw, 72px); }
+  .s1-sub{ font-size: 14.5px; }
+  .s1-hero{ grid-column: 1; grid-row: 2; min-height: 240px; }
+  .s1-tag{ font-size: 9px; padding: 6px 9px; }
+  .s1-foot{ grid-row: 3; padding-top: 14px; font-size: 9px; }
+
+  /* Slide 2 */
+  .s2-top{ grid-template-columns: 1fr; gap: 24px; }
+  .s2-headline{ font-size: clamp(38px, 10vw, 66px); margin-top: 8px; }
+  .s2-stat{ text-align: left; border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 18px; }
+  .s2-stat-num{ font-size: clamp(72px, 20vw, 130px); }
+  .s2-stat-label{ margin-left: 0; max-width: 100%; }
+  .s2-problems{ grid-template-columns: 1fr; }
+  .s2-problem{
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 22px 0;
+  }
+  .s2-problem:last-child{ border-bottom: none; }
+  .s2-problem-num{ font-size: 36px; margin-bottom: 14px; }
+  .s2-problem-title{ font-size: 18px; }
+
+  /* Slide 3 */
+  .s3-statement{ font-size: clamp(40px, 10vw, 70px); }
+  .s3-sub{ font-size: 14.5px; }
+  .s3-compare{ grid-template-columns: 1fr; padding-top: 18px; }
+  .s3-side{ padding: 0 0 22px; border-right: none; }
+  .s3-side.right{
+    padding: 22px 0 0;
+    border-left: none;
+    border-top: 1px solid var(--accent-line);
+  }
+  .s3-side.right::after{ display: none; }
+  .s3-arrow{ display: none; }
+  .s3-context{ grid-template-columns: 1fr; gap: 18px; }
+  .s3-context-stat{
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 18px;
+  }
+  .s3-context-stat:last-child{ border-bottom: none; padding-bottom: 0; }
+  .s3-context-num{ font-size: 38px; }
+
+  /* Slide 4 — CLT Profile */
+  .s-clt-top{ grid-template-columns: 1fr; gap: 18px; }
+  .s-clt-headline{ font-size: clamp(38px, 10vw, 64px); margin-top: 8px; }
+  .s-clt-intro{ padding-left: 16px; font-size: 13.5px; max-width: 100%; }
+  .s-clt-content{ grid-template-columns: 1fr; gap: 18px; padding-top: 22px; }
+  .s-clt-persona{ padding: 22px 22px 20px; }
+  .s-clt-persona-name{ font-size: 30px; }
+  .s-clt-persona-quote{ font-size: 15px; }
+  .s-clt-stats{ grid-template-columns: 1fr 1fr; }
+  .s-clt-stat{ padding: 18px 18px 16px; }
+  .s-clt-stat-num{ font-size: 32px; }
+  .s-clt-stat-desc{ font-size: 11.5px; }
+
+  /* Slide 7 — Comparison */
+  .s-cmp-top{ grid-template-columns: 1fr; gap: 18px; }
+  .s-cmp-title{ font-size: clamp(36px, 9vw, 60px); }
+  .s-cmp-intro{ padding-left: 16px; font-size: 13.5px; }
+
+  /* Mobile: completely restructure the table into stacked cards.
+     Each criterion becomes a card with 3 rows (Cartão / BNPL / OrigamiPay).
+     We hide the header row entirely and use ::before labels on each cell. */
+  .s-cmp-table{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    border: none;
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
+  }
+  /* Hide all 4 header cells on mobile */
+  .s-cmp-h{ display: none; }
+
+  /* Group every 4 cells into a visual card.
+     Cell 1 (criterion title) becomes the card header.
+     Cells 2-4 become rows with their own labels. */
+  .s-cmp-c{
+    border: none;
+    padding: 0;
+    min-height: 0;
+    background: transparent;
+    display: block;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-2);
+  }
+  /* The criterion (every 4n+1) — card header */
+  .s-cmp-c:nth-child(4n+1){
+    background: var(--bg-2);
+    border: 1px solid var(--border-2);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 14px 16px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  /* Cartão (every 4n+2) */
+  .s-cmp-c:nth-child(4n+2){
+    background: var(--bg-1);
+    border: 1px solid var(--border-2);
+    border-bottom: none;
+    padding: 14px 16px 14px 16px;
+    position: relative;
+  }
+  .s-cmp-c:nth-child(4n+2)::before{
+    content: "Cartão de Crédito";
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    margin-bottom: 6px;
+  }
+  /* BNPL (every 4n+3) */
+  .s-cmp-c:nth-child(4n+3){
+    background: var(--bg-1);
+    border: 1px solid var(--border-2);
+    border-bottom: none;
+    padding: 14px 16px;
+  }
+  .s-cmp-c:nth-child(4n+3)::before{
+    content: "BNPL Tradicional";
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    margin-bottom: 6px;
+  }
+  /* OrigamiPay (every 4n) — winner card */
+  .s-cmp-c:nth-child(4n){
+    background: linear-gradient(180deg, var(--accent-soft) 0%, transparent 100%);
+    border: 1px solid var(--accent-line);
+    border-radius: 0 0 8px 8px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .s-cmp-c:nth-child(4n)::before{
+    content: "OrigamiPay ✓";
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+    text-shadow: 0 0 8px var(--accent-glow);
+  }
+  .s-cmp-c:nth-child(4n)::after{ display: none; }
+  .s-cmp-table > .s-cmp-c:nth-last-child(-n+4){ border-bottom: 1px solid var(--border-2); }
+  .s-cmp-table > .s-cmp-c:nth-last-child(-n+1){ border-bottom: 1px solid var(--accent-line); }
+
+  /* Slide 11 — Verticals */
+  .s-vert-top{ grid-template-columns: 1fr; gap: 18px; }
+  .s-vert-title{ font-size: clamp(36px, 9vw, 60px); }
+  .s-vert-intro{ padding-left: 16px; font-size: 13.5px; }
+  .s-vert-grid{ grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 20px; }
+  .s-vert-card{ padding: 20px 18px 18px; gap: 12px; }
+  .s-vert-card-name{ font-size: 16px; }
+  .s-vert-card-num{ font-size: 32px; }
+  .s-vert-disclaimer{ text-align: left; font-size: 9px; }
+
+  /* Slide 5 — Como Funciona */
+  .s4{ grid-template-columns: 1fr; gap: 24px; }
+
+  .s4-title{ font-size: clamp(40px, 10vw, 68px); }
+  .s4-step{ grid-template-columns: 36px 1fr auto; gap: 12px; padding: 14px 0; }
+  .s4-step-num{ font-size: 24px; }
+  .s4-step-title{ font-size: 14.5px; }
+  .s4-step-desc{ font-size: 12.5px; }
+  .s4-step-time{ font-size: 8.5px; }
+  .s4-right{ min-height: 380px; padding: 16px 0; }
+  .phone{ width: 150px; }
+
+  /* Slide 5 */
+  .s5-top{ grid-template-columns: 1fr; gap: 22px; }
+  .s5-title{ font-size: clamp(40px, 10vw, 68px); }
+  .s5-source{ padding-left: 16px; font-size: 10px; max-width: 100%; }
+  .s5-grid{ grid-template-columns: repeat(2, 1fr); }
+  .s5-card{
+    min-height: 220px;
+    padding: 22px 18px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .s5-card:nth-child(2n){ border-right: none; }
+  .s5-card:nth-last-child(-n+2){ border-bottom: none; }
+  .s5-card-stat{ font-size: 56px; margin: 14px 0; }
+
+  /* Slide 6 */
+  .s6-top{ grid-template-columns: 1fr; gap: 18px; }
+  .s6-title{ font-size: clamp(40px, 10vw, 68px); }
+  .s6-intro{ font-size: 13.5px; padding-left: 16px; }
+  .s6-calc{ grid-template-columns: 1fr; }
+  .s6-inputs{ border-right: none; border-bottom: 1px solid var(--border); padding: 20px; }
+  .s6-outputs{ padding: 20px; }
+  .s6-output-val{ font-size: 14px; }
+  .s6-output.total .s6-output-val{ font-size: 32px; }
+
+  /* Slide 7 */
+  .s7-headline{ font-size: clamp(40px, 10vw, 70px); }
+  .s7-frame{ grid-template-columns: 1fr; gap: 32px; padding-top: 22px; }
+  .s7-pillar{ grid-template-columns: 64px 1fr; gap: 14px; padding: 14px 0; }
+  .s7-pillar-title{ font-size: 16px; }
+  .s7-partners-grid{ grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .s7-partner{ padding: 10px 12px; }
+  .s7-numbers{ grid-template-columns: 1fr 1fr 1fr; gap: 0; }
+  .s7-number{ padding-right: 8px; }
+  .s7-number-val{ font-size: 24px; }
+  .s7-number-tag{ font-size: 8.5px; }
+
+  /* Slide 8 */
+  .s8{ grid-template-columns: 1fr; gap: 24px; }
+  .s8-title{ font-size: clamp(40px, 10vw, 70px); }
+  .s8-platforms{ grid-template-columns: 1fr; }
+  .s8-stats{ gap: 16px; padding-top: 20px; margin-top: 22px; }
+  .s8-stat-val{ font-size: 32px; }
+  .s8-stat-tag{ font-size: 9px; }
+  .s8-vtex-tag{ bottom: 12px; right: 12px; font-size: 9px; padding: 6px 10px; }
+
+  /* Slide 12 — CTA */
+  .s9{ gap: 22px; }
+  .s9-hero{ grid-template-columns: 1fr; gap: 22px; }
+  .s9-statement{ font-size: clamp(38px, 10vw, 64px); margin-top: 8px; }
+  .s9-sub{ font-size: 14px; }
+  .s9-right{ justify-self: start; }
+  .s9-qr-frame img{ width: 150px; height: 150px; }
+
+  .s9-recap{ grid-template-columns: 1fr 1fr; padding: 16px 0; }
+  .s9-recap-stat{ padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .s9-recap-stat:first-child{ padding-left: 16px; }
+  .s9-recap-stat:nth-child(2){ border-right: none; }
+  .s9-recap-stat:nth-child(3){ border-right: 1px solid var(--border); padding-left: 16px; }
+  .s9-recap-stat:nth-last-child(-n+2){ border-bottom: none; }
+
+  .s9-foot{ grid-template-columns: 1fr; gap: 14px; }
+  .s9-contact-item{ padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .s9-signature{ text-align: left; border-left: none; padding-left: 0; padding-top: 6px; }
+
+  /* Hide hint on mobile (we use swipe) */
+  .hint{ font-size: 9px; padding: 8px 14px; bottom: 60px; }
+  .hint kbd{ display: none; }
+}
+
+@media (max-width: 540px){
+  .s1-display{ font-size: 44px; }
+  .s2-headline, .s3-statement, .s4-title, .s5-title,
+  .s6-title, .s7-headline, .s8-title{ font-size: 42px; }
+  .s9-statement{ font-size: 44px; }
+  .s2-stat-num{ font-size: 92px; }
+  .s5-grid{ grid-template-columns: 1fr; }
+  .s5-card{ border-right: none; min-height: auto; }
+  .s5-card:not(:last-child){ border-bottom: 1px solid var(--border); }
+  .s5-card:last-child{ border-bottom: none; }
+  .phone{ width: 130px; }
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"></div>
+
+<div class="deck">
+
+  <!-- PERSISTENT CHROME -->
+  <header class="chrome">
+    <img src="assets/logo-light.png" class="chrome-logo" alt="OrigamiPay" />
+    <div class="chrome-meta">
+      <span>Pitch Deck · 2026</span>
+    </div>
+  </header>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 01 — COVER                                               -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section class="slide s1 active" data-slide="1">
+    <div class="s1-headline">
+      <div class="eyebrow s1-eyebrow fade-up d1"><strong>Pitch Deck</strong> · Para Sellers de E-commerce</div>
+      <h1 class="display s1-display fade-up d2">
+        Potencialize<br>suas vendas com<br><em>crédito inteligente.</em>
+      </h1>
+      <p class="s1-sub fade-up d3">
+        <span class="pill">PIX Consignado</span> O primeiro checkout brasileiro que transforma a margem consignável do seu cliente CLT em pagamento instantâneo. Você recebe à vista, sem inadimplência.
+      </p>
+    </div>
+    <div class="s1-hero fade-up d4">
+      <div class="s1-hero-frame">
+        <span class="s1-tag t1">47M CLT elegíveis</span>
+        <span class="s1-tag t2">+30% conversão</span>
+        <img src="assets/hero.webp" alt="Checkout integrado com OrigamiPay" />
+      </div>
+    </div>
+    <div class="s1-foot fade-up d5">
+      <span><strong>OrigamiPay</strong></span>
+      <span>Apresentação Comercial</span>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 02 — PROBLEMA                                            -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section class="slide s2" data-slide="2">
+    <div class="s2-top">
+      <div>
+        <div class="eyebrow fade-up d1"><strong>01</strong> — O problema da sua loja</div>
+        <h2 class="s2-headline fade-up d2">
+          Seus carrinhos<br>morrem antes do<br><em>checkout.</em>
+        </h2>
+      </div>
+      <div class="s2-stat fade-up d2">
+        <div class="s2-stat-num"><em>75%</em></div>
+        <div class="s2-stat-label">Das compras no e-commerce brasileiro são parceladas. É a maior parte do seu funil — e o cartão não dá conta.</div>
+      </div>
+    </div>
+
+    <div class="s2-problems">
+      <div class="s2-problem fade-up d3">
+        <span class="s2-problem-num">01</span>
+        <div class="s2-problem-title">Cartão reprovado mata a venda</div>
+        <p class="s2-problem-body">Seu cliente CLT chega no fim do checkout, mas o limite acaba antes do desejo. A jornada inteira evapora no último clique.</p>
+      </div>
+      <div class="s2-problem fade-up d4">
+        <span class="s2-problem-num">02</span>
+        <div class="s2-problem-title">D+30 trava seu caixa</div>
+        <p class="s2-problem-body">Cartão tradicional libera em 30 dias, ainda transfere o risco de chargeback pra você. Capital de giro preso em recebíveis.</p>
+      </div>
+      <div class="s2-problem fade-up d5">
+        <span class="s2-problem-num">03</span>
+        <div class="s2-problem-title">Tickets altos ficam fora</div>
+        <p class="s2-problem-body">Sem opções reais de parcelamento longo, produtos premium ficam fora do alcance do consumidor — e fora do seu funil.</p>
+      </div>
+    </div>
+
+    <div class="s2-foot fade-up d6">
+      <span><strong>02</strong> / 12</span>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 03 — A DIFERENÇA: PIX CONSIGNADO                         -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section class="slide s3" data-slide="3">
+    <div>
+      <div class="eyebrow fade-up d1"><strong>02</strong> — A diferença</div>
+      <h2 class="s3-statement fade-up d2">
+        Não é BNPL.<br>É <em>PIX Consignado.</em>
+      </h2>
+    </div>
+
+    <p class="s3-sub fade-up d3">
+      Somos o único checkout do Brasil que transforma a margem consignável do seu cliente CLT em pagamento instantâneo. Não é financiamento, não é cartão, não é BNPL — é uma categoria nova, originada dentro da sua loja.
+    </p>
+
+    <div class="s3-compare">
+      <div class="s3-side fade-up d4">
+        <div class="s3-side-tag">BNPL tradicional</div>
+        <div class="s3-side-title">Crédito que você empresta</div>
+        <ul class="s3-side-list">
+          <li>O fintech assume risco de inadimplência</li>
+          <li>Aprovação por score, dependente de bureau</li>
+          <li>Reprovação alta no público B/C</li>
+          <li>Cobra MDR alto pra cobrir o calote</li>
+        </ul>
+      </div>
+
+      <div class="s3-arrow fade-up d4">
+        <svg viewBox="0 0 100 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5">
+          <line x1="0" y1="12" x2="88" y2="12" stroke-dasharray="2 4"/>
+          <polyline points="82,4 90,12 82,20"/>
+        </svg>
+      </div>
+
+      <div class="s3-side right fade-up d5">
+        <div class="s3-side-tag">OrigamiPay · 2026</div>
+        <div class="s3-side-title">PIX Consignado no checkout</div>
+        <ul class="s3-side-list">
+          <li>Crédito já aprovado pela margem CLT do cliente</li>
+          <li>Liquidação via PIX em D+0 direto pra você</li>
+          <li>Pagamento por desconto em folha — sem chargeback</li>
+          <li>Sua loja vira destino do crédito consignado privado</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="s3-context fade-up d6">
+      <div class="s3-context-stat">
+        <div class="s3-context-num"><em>47</em><small>milhões</small></div>
+        <div class="s3-context-label">CLTs elegíveis pelo novo Crédito do Trabalhador</div>
+      </div>
+      <div class="s3-context-stat">
+        <div class="s3-context-num">R$ 41 → 120<small>BI</small></div>
+        <div class="s3-context-label">Carteira atual e projeção do consignado privado</div>
+      </div>
+      <div class="s3-context-stat">
+        <div class="s3-context-num"><em>1º</em><small>do mercado</small></div>
+        <div class="s3-context-label">Único PIX Consignado nativo no checkout VTEX</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 04 — CLT PROFILE (NEW)                                   -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section class="slide s-clt" data-slide="4">
+    <div class="s-clt-top">
+      <div>
+        <div class="eyebrow fade-up d1"><strong>03</strong> — Quem é o cliente</div>
+        <h2 class="s-clt-headline fade-up d2">
+          O público gigante<br>que <em>você está ignorando.</em>
+        </h2>
+      </div>
+      <p class="s-clt-intro fade-up d3">
+        Trabalhador CLT brasileiro com renda formal e estável. Hoje, ele é reprovado no cartão ou fica preso em parcelas curtas. A OrigamiPay destrava esse público pra você.
+      </p>
+    </div>
+
+    <div class="s-clt-content">
+      <div class="s-clt-persona fade-up d3">
+        <div class="s-clt-persona-bg" aria-hidden="true">47<span>M</span></div>
+        <div class="s-clt-persona-header">
+          <span class="s-clt-persona-eyebrow">Perfil-tipo · Brasil 2026</span>
+          <div class="s-clt-persona-name">CLT formal,<br><em>32–48 anos</em></div>
+        </div>
+        <div class="s-clt-persona-quote">
+          "Eu queria comprar a geladeira nova, mas o cartão não passava o valor inteiro. Com o consignado, paguei à vista e desconta no salário."
+        </div>
+        <div class="s-clt-persona-meta">
+          <div class="s-clt-persona-meta-item">
+            <span class="label">Renda média</span>
+            <span class="val">R$ 2,8k – 8k</span>
+          </div>
+          <div class="s-clt-persona-meta-item">
+            <span class="label">Setor</span>
+            <span class="val">Privado · CLT ativo</span>
+          </div>
+          <div class="s-clt-persona-meta-item">
+            <span class="label">Concentração</span>
+            <span class="val">SP · MG · RJ · NE</span>
+          </div>
+          <div class="s-clt-persona-meta-item">
+            <span class="label">Comportamento</span>
+            <span class="val">Compra planejada</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="s-clt-stats">
+        <div class="s-clt-stat fade-up d4">
+          <span class="s-clt-stat-tag">Universo</span>
+          <div class="s-clt-stat-num">47<span class="unit"> M</span></div>
+          <div class="s-clt-stat-desc">Trabalhadores CLT elegíveis no Brasil hoje.</div>
+        </div>
+        <div class="s-clt-stat fade-up d5">
+          <span class="s-clt-stat-tag">Reprovação no cartão</span>
+          <div class="s-clt-stat-num">+50<span class="unit">%</span></div>
+          <div class="s-clt-stat-desc">Desse público é negado ou tem limite insuficiente.</div>
+        </div>
+        <div class="s-clt-stat fade-up d5">
+          <span class="s-clt-stat-tag">Ticket viável</span>
+          <div class="s-clt-stat-num neutral">até R$ 30k</div>
+          <div class="s-clt-stat-desc">Com parcelamento até 24× direto na folha.</div>
+        </div>
+        <div class="s-clt-stat fade-up d6">
+          <span class="s-clt-stat-tag">Cliente novo</span>
+          <div class="s-clt-stat-num">+38<span class="unit">%</span></div>
+          <div class="s-clt-stat-desc">Da base que compra com OrigamiPay nunca finalizou no cartão.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="s-clt-foot fade-up d6">
+      <span><strong>04</strong> / 12</span>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 05 — COMO FUNCIONA                                       -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section class="slide s4" data-slide="5">
+    <div class="s4-left">
+      <div>
+        <div class="eyebrow fade-up d1"><strong>04</strong> — Fluxo no checkout</div>
+        <h2 class="s4-title fade-up d2">
+          Aprovação<br>em <em>segundos.</em>
+        </h2>
+        <div class="s4-pix-pill fade-up d2">PIX D+0 · Você recebe na hora</div>
+      </div>
+
+      <div class="s4-steps">
+        <div class="s4-step fade-up d3">
+          <div class="s4-step-num">01</div>
+          <div>
+            <div class="s4-step-title">Cliente escolhe OrigamiPay</div>
+            <div class="s4-step-desc">No seu checkout, ao lado de cartão e PIX.</div>
+          </div>
+          <div class="s4-step-time">Imediato</div>
+        </div>
+        <div class="s4-step fade-up d4">
+          <div class="s4-step-num">02</div>
+          <div>
+            <div class="s4-step-title">Consulta automática de margem</div>
+            <div class="s4-step-desc">CPF + autorização eSocial via WhatsApp. Tudo dentro do checkout.</div>
+          </div>
+          <div class="s4-step-time">~10s</div>
+        </div>
+        <div class="s4-step fade-up d5">
+          <div class="s4-step-num">03</div>
+          <div>
+            <div class="s4-step-title">Parcelas até 24× &amp; aceite</div>
+            <div class="s4-step-desc">Cliente vê CET, juros e parcela. Aceita com taxa transparente.</div>
+          </div>
+          <div class="s4-step-time">~15s</div>
+        </div>
+        <div class="s4-step fade-up d6">
+          <div class="s4-step-num">04</div>
+          <div>
+            <div class="s4-step-title">Biometria facial &amp; PIX para você</div>
+            <div class="s4-step-desc">Antifraude valida. Você recebe o valor integral via PIX, à vista.</div>
+          </div>
+          <div class="s4-step-time">~5s</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="s4-right fade-up d3">
+      <div class="s4-phones">
+        <div class="phone p-left">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <img src="assets/phone2.png" alt="Cliente escolhe o número de parcelas" />
+          </div>
+        </div>
+        <div class="phone p-right has-video">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <video
+              src="assets/demo-app.mp4"
+              poster="assets/demo-poster.jpg"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
+              aria-label="Demonstração do app OrigamiPay em uso"
+            ></video>
+            <span class="phone-live-tag" aria-hidden="true">● AO VIVO</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 06 — VANTAGENS                                           -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section class="slide s5" data-slide="6">
+    <div class="s5-top">
+      <div>
+        <div class="eyebrow fade-up d1"><strong>05</strong> — Impacto direto na sua loja</div>
+        <h2 class="s5-title fade-up d2">
+          O que muda<br>para o <em>seu e-commerce.</em>
+        </h2>
+      </div>
+      <div class="s5-source fade-up d3">
+        <strong>Fontes:</strong> Afterpay/Block (BNPL Global Index), Harvard Business Review, Banco Central 2025, benchmarks Brasil 2025–2026.
+      </div>
+    </div>
+
+    <div class="s5-grid">
+      <div class="s5-card featured fade-up d3">
+        <div>
+          <div class="s5-card-tag">Conversão</div>
+          <div class="s5-card-stat">+30<span class="unit">%</span></div>
+        </div>
+        <div>
+          <div class="s5-card-title">Mais carrinhos viram pedidos</div>
+          <div class="s5-card-body">Lojas que adicionam BNPL ao checkout aumentam conversão em até 30% (HBR: +17 a 26% só pela presença).</div>
+          <div class="s5-card-source">Afterpay/Block · HBR</div>
+        </div>
+      </div>
+      <div class="s5-card featured fade-up d4">
+        <div>
+          <div class="s5-card-tag">Ticket médio</div>
+          <div class="s5-card-stat">+45<span class="unit">%</span></div>
+        </div>
+        <div>
+          <div class="s5-card-title">Você vende produtos premium</div>
+          <div class="s5-card-body">Carrinhos com BNPL têm ticket 45% maior. No Brasil, gasto por compra sobe 6,4% e frequência sobe 20%.</div>
+          <div class="s5-card-source">Afterpay/Block · BR Bench</div>
+        </div>
+      </div>
+      <div class="s5-card fade-up d5">
+        <div>
+          <div class="s5-card-tag">Inadimplência</div>
+          <div class="s5-card-stat">0<span class="unit">%</span></div>
+        </div>
+        <div>
+          <div class="s5-card-title">Você não absorve calote</div>
+          <div class="s5-card-body">Desconto em folha do CLT + zero chargeback (PIX irreversível). O risco fica fora da sua operação.</div>
+          <div class="s5-card-source">Modelo OrigamiPay</div>
+        </div>
+      </div>
+      <div class="s5-card fade-up d6">
+        <div>
+          <div class="s5-card-tag">Liquidação</div>
+          <div class="s5-card-stat">D+0</div>
+        </div>
+        <div>
+          <div class="s5-card-title">Capital de giro preservado</div>
+          <div class="s5-card-body">Recebimento via PIX no momento da aprovação. Sem D+30 ou D+90 do cartão. Caixa imediato.</div>
+          <div class="s5-card-source">PIX · Banco Central</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="s5-foot fade-up d6">
+      <span><strong>06</strong> / 12</span>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 07 — COMPARISON (NEW)                                    -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section class="slide s-cmp" data-slide="7">
+    <div class="s-cmp-top">
+      <div>
+        <div class="eyebrow fade-up d1"><strong>06</strong> — Mesmo carrinho, três caminhos</div>
+        <h2 class="s-cmp-title fade-up d2">
+          Veja por que<br>OrigamiPay <em>vence o mesmo carrinho.</em>
+        </h2>
+      </div>
+      <p class="s-cmp-intro fade-up d3">
+        Cartão, BNPL e OrigamiPay disputam o mesmo cliente no checkout. A diferença está em quem assume o risco, quem paga a taxa e quanto o cliente realmente consegue parcelar.
+      </p>
+    </div>
+
+    <div class="s-cmp-table fade-up d3">
+      <!-- Header row -->
+      <div class="s-cmp-h">Critério</div>
+      <div class="s-cmp-h">Cartão de Crédito</div>
+      <div class="s-cmp-h">BNPL Tradicional</div>
+      <div class="s-cmp-h win">OrigamiPay</div>
+
+      <!-- Row: Quem tem acesso -->
+      <div class="s-cmp-c">Quem tem acesso</div>
+      <div class="s-cmp-c">Apenas quem tem limite disponível e CPF sem restrição. Inadimplentes ficam de fora.</div>
+      <div class="s-cmp-c">Aprovados em análise por score e histórico — geralmente quem já usa cartão.</div>
+      <div class="s-cmp-c">CLT com margem consignável, mesmo aqueles com cartão travado ou sem cartão.</div>
+
+      <!-- Row: Custo para o lojista -->
+      <div class="s-cmp-c">Custo para o lojista</div>
+      <div class="s-cmp-c">MDR de 2% a 5% + custos de chargeback e disputas operacionais.</div>
+      <div class="s-cmp-c">MDR mais alto (4% a 6%) para compensar o risco de crédito assumido pela fintech.</div>
+      <div class="s-cmp-c">MDR competitivo com PIX à vista e zero chargeback.</div>
+
+      <!-- Row: Como o cliente paga -->
+      <div class="s-cmp-c">Como o cliente paga</div>
+      <div class="s-cmp-c">Fatura do cartão, com risco de juros rotativos altos se houver atraso.</div>
+      <div class="s-cmp-c">Cartão ou boleto/PIX agendado em prazos curtos (4–6 parcelas).</div>
+      <div class="s-cmp-c">Parcelas descontadas direto na folha, com prazos longos e disciplina automática.</div>
+
+      <!-- Row: Juros típicos -->
+      <div class="s-cmp-c">Juros típicos (cliente)</div>
+      <div class="s-cmp-c">Rotativo acima de 10–15% a.m. (mais de 300% ao ano).</div>
+      <div class="s-cmp-c">Entre 3% e 8% ao mês, conforme perfil do cliente.</div>
+      <div class="s-cmp-c">Em torno de 6,5–7% ao mês — estabilidade do consignado.</div>
+
+      <!-- Row: Risco de fraude -->
+      <div class="s-cmp-c">Risco de fraude</div>
+      <div class="s-cmp-c">Alta exposição: phishing e autofraude, com chargeback direto pra você.</div>
+      <div class="s-cmp-c">Reduz o risco direto, mas ainda há disputas complexas dependendo do arranjo.</div>
+      <div class="s-cmp-c">Praticamente zero. Fluxo similar a consignado bancário com PIX no recebimento.</div>
+
+      <!-- Row: Efeito no checkout -->
+      <div class="s-cmp-c">Efeito no checkout</div>
+      <div class="s-cmp-c">Causa abandono por falta de limite ou medo de usar cartão online.</div>
+      <div class="s-cmp-c">Aumenta conversão em até 20–30% ao adicionar parcelamento rápido.</div>
+      <div class="s-cmp-c">Destrava uma linha nova de crédito ligada ao salário, atendendo quem não tem limite.</div>
+    </div>
+
+    <div class="s-cmp-foot">
+      <span><strong>07</strong> / 12</span>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 08 — SIMULADOR / CALCULADORA                             -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section class="slide s6" data-slide="8">
+    <div class="s6-top">
+      <div>
+        <div class="eyebrow fade-up d1"><strong>07</strong> — Simulador</div>
+        <h2 class="s6-title fade-up d2">
+          Quanto sua loja<br><em>ganha por mês.</em>
+        </h2>
+      </div>
+      <p class="s6-intro fade-up d3">
+        Mexa nos parâmetros da sua loja e veja, em tempo real, a receita adicional estimada com OrigamiPay no checkout. Sua taxa preferencial é definida em contrato.
+      </p>
+    </div>
+
+    <div class="s6-calc fade-up d3">
+      <div class="s6-inputs">
+        <div class="s6-inputs-head">
+          <span>Sua loja hoje</span>
+          <span class="live-tag">Cálculo ao vivo</span>
+        </div>
+
+        <div class="s6-input">
+          <div class="s6-input-label">
+            <span class="s6-input-name">Faturamento mensal</span>
+            <span class="s6-input-value" id="v-fat">R$ 500.000</span>
+          </div>
+          <input type="range" id="i-fat" min="100000" max="5000000" step="50000" value="500000" />
+          <div class="s6-input-range"><span>R$ 100k</span><span>R$ 5M</span></div>
+        </div>
+
+        <div class="s6-input">
+          <div class="s6-input-label">
+            <span class="s6-input-name">Ticket médio</span>
+            <span class="s6-input-value" id="v-tic">R$ 2.500</span>
+          </div>
+          <input type="range" id="i-tic" min="200" max="10000" step="100" value="2500" />
+          <div class="s6-input-range"><span>R$ 200</span><span>R$ 10k</span></div>
+        </div>
+
+        <div class="s6-input">
+          <div class="s6-input-label">
+            <span class="s6-input-name">% público CLT da sua base</span>
+            <span class="s6-input-value" id="v-clt">60%</span>
+          </div>
+          <input type="range" id="i-clt" min="20" max="100" step="5" value="60" />
+          <div class="s6-input-range"><span>20%</span><span>100%</span></div>
+        </div>
+
+        <div class="s6-rate-note">
+          <span class="s6-rate-note-label">Sua taxa preferencial</span>
+          <span class="s6-rate-note-val">Definida em contrato</span>
+        </div>
+      </div>
+
+      <div class="s6-outputs">
+        <div class="s6-outputs-head">Impacto mensal estimado</div>
+
+        <div class="s6-output">
+          <div class="s6-output-label">
+            Volume processado via OrigamiPay
+            <small>Estimativa de adesão do público elegível</small>
+          </div>
+          <div class="s6-output-val" id="o-vol">R$ 0</div>
+        </div>
+
+        <div class="s6-output">
+          <div class="s6-output-label">
+            Receita adicional · novos pedidos
+            <small>Uplift de conversão (+20% benchmark)</small>
+          </div>
+          <div class="s6-output-val" id="o-conv">R$ 0</div>
+        </div>
+
+        <div class="s6-output">
+          <div class="s6-output-label">
+            Receita adicional · ticket médio
+            <small>Uplift de ticket (+30% benchmark)</small>
+          </div>
+          <div class="s6-output-val" id="o-tic">R$ 0</div>
+        </div>
+
+        <div class="s6-output uplift">
+          <div class="s6-output-label">
+            Uplift sobre faturamento
+            <small>Variação total estimada</small>
+          </div>
+          <div class="s6-uplift-pct" id="o-pct">+0%</div>
+        </div>
+        <div class="s6-uplift-bar" id="o-bar"></div>
+
+        <div class="s6-output total">
+          <div class="s6-output-label">Receita líquida adicional / mês</div>
+          <div class="s6-output-val" id="o-total">R$ 0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="s6-foot">
+      <span><strong>08</strong> / 12</span>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 09 — SEGURANÇA & PARCEIROS                               -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section class="slide s7" data-slide="9">
+    <div>
+      <div class="eyebrow fade-up d1"><strong>08</strong> — Segurança &amp; compliance</div>
+      <h2 class="s7-headline fade-up d2">
+        Você oferece crédito<br>regulado, <em>não risco.</em>
+      </h2>
+    </div>
+
+    <div class="s7-frame">
+      <div class="s7-pillars">
+        <div class="s7-pillar fade-up d3">
+          <div class="s7-pillar-tag">BCB</div>
+          <div>
+            <div class="s7-pillar-title">Banco Central</div>
+            <div class="s7-pillar-body">Operação regulada pelo BCB. Categoria SCD/IF autorizada e auditada para crédito consignado privado.</div>
+          </div>
+        </div>
+        <div class="s7-pillar fade-up d4">
+          <div class="s7-pillar-tag">LGPD</div>
+          <div>
+            <div class="s7-pillar-title">Proteção de dados</div>
+            <div class="s7-pillar-body">Conformidade integral com a Lei Geral de Proteção de Dados. Seus dados e os do cliente, blindados.</div>
+          </div>
+        </div>
+        <div class="s7-pillar fade-up d5">
+          <div class="s7-pillar-tag">eSOCIAL</div>
+          <div>
+            <div class="s7-pillar-title">Margem oficial</div>
+            <div class="s7-pillar-body">Integração direta com o eSocial e FGTS como garantia. Validação trabalhista em tempo real.</div>
+          </div>
+        </div>
+        <div class="s7-pillar fade-up d6">
+          <div class="s7-pillar-tag">BIO</div>
+          <div>
+            <div class="s7-pillar-title">Biometria facial</div>
+            <div class="s7-pillar-body">Toda contratação exige verificação biométrica. Antifraude por padrão, sem fricção pra você.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="s7-partners fade-up d3">
+        <span class="s7-partners-head">Parceiros &amp; infraestrutura</span>
+
+        <div class="s7-partners-grid">
+          <div class="s7-partner"><img src="assets/p-vtex.svg" alt="VTEX" /></div>
+          <div class="s7-partner"><img src="assets/p-c6.webp" alt="C6 Bank" /></div>
+          <div class="s7-partner"><img src="assets/p-pan.webp" alt="Banco Pan" /></div>
+          <div class="s7-partner dark"><img src="assets/p-unico.png" alt="Unico" /></div>
+          <div class="s7-partner"><img src="assets/p-celcoin.webp" alt="Celcoin" /></div>
+          <div class="s7-partner dark"><img src="assets/p-paulista.png" alt="Banco Paulista" /></div>
+          <div class="s7-partner"><img src="assets/p-parana.webp" alt="Paraná Banco" /></div>
+          <div class="s7-partner"><img src="assets/p-bmp.webp" alt="BMP" /></div>
+          <div class="s7-partner"><img src="assets/p-uy3.webp" alt="UY3" /></div>
+          <div class="s7-partner"><img src="assets/p-viainvest.webp" alt="ViaInvest" /></div>
+        </div>
+
+        <div class="s7-numbers">
+          <div class="s7-number">
+            <div class="s7-number-val accent">35<span class="unit">%</span></div>
+            <div class="s7-number-tag">Margem máxima<br>do salário CLT</div>
+          </div>
+          <div class="s7-number">
+            <div class="s7-number-val">FGTS</div>
+            <div class="s7-number-tag">Como garantia<br>do crédito</div>
+          </div>
+          <div class="s7-number">
+            <div class="s7-number-val accent">0</div>
+            <div class="s7-number-tag">Chargebacks no<br>histórico do PIX</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="s7-foot fade-up d7">
+      <span><strong>09</strong> / 12</span>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 10 — INTEGRAÇÃO                                          -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section class="slide s8" data-slide="10">
+    <div class="s8-left">
+      <div>
+        <div class="eyebrow fade-up d1"><strong>09</strong> — Integração</div>
+        <h2 class="s8-title fade-up d2">
+          Plug &amp; Play<br>na <em>VTEX.</em>
+        </h2>
+        <p class="s8-body fade-up d3">
+          App oficial na Loja de Aplicativos da VTEX, com instalação em 1 clique. E para qualquer e-commerce próprio, oferecemos uma API REST completa e documentada — após assinatura, você está no ar em até 24 horas.
+        </p>
+
+        <div class="s8-platforms fade-up d4">
+          <div class="s8-platform featured">
+            <div class="s8-platform-tag">Plataforma · App oficial</div>
+            <div class="s8-platform-title">VTEX</div>
+            <div class="s8-platform-desc">Instalação em 1 clique pela Loja de Aplicativos. Zero código.</div>
+          </div>
+          <div class="s8-platform">
+            <div class="s8-platform-tag">E-commerce próprio</div>
+            <div class="s8-platform-title">API REST</div>
+            <div class="s8-platform-desc">Documentação completa para integração em qualquer stack.</div>
+            <a class="s8-platform-link" href="https://docs.origamipay.com.br/" target="_blank">docs.origamipay.com.br →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="s8-stats">
+        <div class="fade-up d5">
+          <div class="s8-stat-val">≤ 1<span class="unit"> dia</span></div>
+          <div class="s8-stat-tag">Para go-live<br>após assinatura</div>
+        </div>
+        <div class="fade-up d6">
+          <div class="s8-stat-val neutral">99,9<span class="unit">%</span></div>
+          <div class="s8-stat-tag">SLA de uptime<br>do gateway</div>
+        </div>
+        <div class="fade-up d7">
+          <div class="s8-stat-val neutral">24/7</div>
+          <div class="s8-stat-tag">Suporte técnico<br>e financeiro</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="s8-right fade-up d3">
+      <div class="s8-vtex-window">
+        <div class="s8-vtex-bar">
+          <div class="s8-vtex-dots"><span></span><span></span><span></span></div>
+          <div class="s8-vtex-url">app.vtex.com / <strong>loja-de-aplicativos</strong></div>
+          <div style="width:42px;"></div>
+        </div>
+        <div class="s8-vtex-body">
+          <img src="assets/vtex-store.png" alt="OrigamiPay disponível na Loja de Aplicativos da VTEX" />
+        </div>
+        <span class="s8-vtex-tag">App oficial VTEX</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 11 — VERTICAIS DE CLIENTES (NEW)                         -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section class="slide s-vert" data-slide="11">
+    <div class="s-vert-top">
+      <div>
+        <div class="eyebrow fade-up d1"><strong>10</strong> — Resultados em produção</div>
+        <h2 class="s-vert-title fade-up d2">
+          Verticais que <em>já operam</em><br>com OrigamiPay.
+        </h2>
+      </div>
+      <p class="s-vert-intro fade-up d3">
+        Operamos hoje em quatro verticais com peso real no e-commerce brasileiro. Os números abaixo são resultados consolidados após o go-live, em casos reais sob NDA.
+      </p>
+    </div>
+
+    <div class="s-vert-grid">
+      <!-- Travel -->
+      <div class="s-vert-card fade-up d3">
+        <div class="s-vert-card-icon">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor">
+            <path d="M16 4l3 9 9 3-9 3-3 9-3-9-9-3 9-3z" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="s-vert-card-tag">Vertical 01</span>
+        <div class="s-vert-card-name">Viagens &amp;<br>Turismo</div>
+        <div class="s-vert-card-anon">Um dos maiores<br>players do mercado BR</div>
+        <div class="s-vert-card-result">
+          <div class="s-vert-card-num">+30<span class="unit">%</span></div>
+          <div class="s-vert-card-metric">Aumento<br>de conversão</div>
+        </div>
+      </div>
+
+      <!-- Climatização -->
+      <div class="s-vert-card fade-up d4">
+        <div class="s-vert-card-icon">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor">
+            <rect x="4" y="6" width="24" height="14" rx="2"/>
+            <path d="M8 24l3 4M16 24l3 4M22 24v6"/>
+          </svg>
+        </div>
+        <span class="s-vert-card-tag">Vertical 02</span>
+        <div class="s-vert-card-name">Climatização<br>&amp; ar-condicionado</div>
+        <div class="s-vert-card-anon">Maior e-commerce<br>do segmento no Brasil</div>
+        <div class="s-vert-card-result">
+          <div class="s-vert-card-num">+42<span class="unit">%</span></div>
+          <div class="s-vert-card-metric">Crescimento<br>do ticket médio</div>
+        </div>
+      </div>
+
+      <!-- Eletrônicos -->
+      <div class="s-vert-card fade-up d5">
+        <div class="s-vert-card-icon">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor">
+            <rect x="4" y="6" width="24" height="16" rx="2"/>
+            <path d="M11 26h10M16 22v4"/>
+          </svg>
+        </div>
+        <span class="s-vert-card-tag">Vertical 03</span>
+        <div class="s-vert-card-name">Eletrônicos<br>&amp; linha branca</div>
+        <div class="s-vert-card-anon">Rede nacional<br>com presença omnichannel</div>
+        <div class="s-vert-card-result">
+          <div class="s-vert-card-num">+27<span class="unit">%</span></div>
+          <div class="s-vert-card-metric">Aprovação em<br>tickets &gt; R$ 5k</div>
+        </div>
+      </div>
+
+      <!-- Moda & Varejo -->
+      <div class="s-vert-card fade-up d6">
+        <div class="s-vert-card-icon">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor">
+            <path d="M10 8l-4 4v14h20V12l-4-4M10 8h12M10 8a3 3 0 0 0 6 0 3 3 0 0 0 6 0"/>
+          </svg>
+        </div>
+        <span class="s-vert-card-tag">Vertical 04</span>
+        <div class="s-vert-card-name">Moda<br>&amp; varejo</div>
+        <div class="s-vert-card-anon">Grande rede de<br>departamentos no Brasil</div>
+        <div class="s-vert-card-result">
+          <div class="s-vert-card-num">+35<span class="unit">%</span></div>
+          <div class="s-vert-card-metric">Recompra<br>em 90 dias</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="s-vert-disclaimer">Resultados consolidados de cases reais sob NDA. Logos e nomes disponíveis em conversa direta com o time comercial.</p>
+
+    <div class="s-vert-foot">
+      <span></span>
+      <span><strong>11</strong> / 12</span>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 12 — CTA / ENCERRAMENTO                                  -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section class="slide s9" data-slide="12">
+
+    <!-- 1 · Hero CTA + QR -->
+    <div class="s9-hero">
+      <div class="s9-left">
+        <div class="eyebrow fade-up d1"><strong>11</strong> — Próximo passo</div>
+        <h2 class="s9-statement fade-up d2">
+          Leve a OrigamiPay<br>para o seu<br><em>e-commerce hoje.</em>
+        </h2>
+        <p class="s9-sub fade-up d3">
+          Em uma conversa de 30 minutos você vê o checkout integrado ao vivo, a simulação para o seu volume e um caso real do seu setor — sem compromisso.
+        </p>
+      </div>
+
+      <div class="s9-right fade-up d3">
+        <div class="s9-qr-frame">
+          <img src="assets/qr-calendly.svg" alt="QR Code para agendar demo via Calendly" />
+        </div>
+        <div class="s9-qr-cap">
+          Aponte a câmera<br>
+          <strong>e agende sua demo.</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 · Recap stats -->
+    <div class="s9-recap fade-up d4">
+      <div class="s9-recap-stat">
+        <div class="s9-recap-num">+30<span class="unit">%</span></div>
+        <div class="s9-recap-tag">Conversão</div>
+      </div>
+      <div class="s9-recap-stat">
+        <div class="s9-recap-num">+45<span class="unit">%</span></div>
+        <div class="s9-recap-tag">Ticket médio</div>
+      </div>
+      <div class="s9-recap-stat">
+        <div class="s9-recap-num neutral">0<span class="unit">%</span></div>
+        <div class="s9-recap-tag">Inadimplência</div>
+      </div>
+      <div class="s9-recap-stat">
+        <div class="s9-recap-num neutral">D+0</div>
+        <div class="s9-recap-tag">Liquidação PIX</div>
+      </div>
+    </div>
+
+    <!-- 3 · Footer (contatos + signature) -->
+    <div class="s9-foot fade-up d5">
+      <div class="s9-contact-item">
+        <span class="label">Agende sua demo</span>
+        <span class="val accent">calendly.com/mv-origamipartners</span>
+      </div>
+      <div class="s9-contact-item">
+        <span class="label">Documentação</span>
+        <span class="val">docs.origamipay.com.br</span>
+      </div>
+      <div class="s9-contact-item">
+        <span class="label">Site</span>
+        <span class="val">origamipay.com.br</span>
+      </div>
+      <div class="s9-signature">
+        <div class="s9-signature-text">
+          O futuro do crédito no<br>checkout começa com você.
+        </div>
+        <div class="s9-signature-mark">— OrigamiPay · 2026</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- PROGRESS / NAV -->
+  <footer class="progress">
+    <span class="progress-counter"><strong id="current">01</strong><span>/ 12</span></span>
+    <div class="progress-bar"></div>
+    <div class="progress-nav">
+      <button id="prev" aria-label="Anterior">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button id="next" aria-label="Próximo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+  </footer>
+
+  <div class="hint">
+    <span>Use</span>
+    <kbd>←</kbd>
+    <kbd>→</kbd>
+    <span>ou deslize</span>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  const counter = document.getElementById('current');
+  const bar = document.querySelector('.progress-bar');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+  let idx = 0;
+  let lock = false;
+
+  function go(n){
+    if (lock) return;
+    n = Math.max(0, Math.min(total - 1, n));
+    if (n === idx) return;
+    lock = true;
+    const dir = n > idx ? 1 : -1;
+    const prev = slides[idx];
+    prev.classList.remove('active');
+    prev.classList.toggle('prev', dir === 1);
+    idx = n;
+    const next = slides[idx];
+    next.classList.remove('prev');
+
+    // Force animation reset: reset scroll, force reflow, then add active class
+    // This re-triggers the fade-up animations on every visit
+    next.scrollTop = 0;
+    next.classList.remove('active');
+    // Trigger reflow — reading offsetHeight forces the browser to recalculate
+    void next.offsetHeight;
+    next.classList.add('active');
+
+    counter.textContent = String(idx + 1).padStart(2, '0');
+    bar.style.setProperty('--p', (idx + 1) / total);
+    setTimeout(() => { lock = false; }, 720);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'range') return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(idx + 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(idx - 1); }
+    if (e.key === 'Home') { go(0); }
+    if (e.key === 'End') { go(total - 1); }
+  });
+
+  prevBtn.addEventListener('click', () => go(idx - 1));
+  nextBtn.addEventListener('click', () => go(idx + 1));
+
+  // Edge clicks (desktop)
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('button, a, input, .progress-nav, .s9-qr-frame, .s6-calc')) return;
+    if (window.innerWidth < 1024) return; // edge clicks only on desktop
+    const x = e.clientX / window.innerWidth;
+    if (x < 0.16) go(idx - 1);
+    else if (x > 0.84) go(idx + 1);
+  });
+
+  // Wheel (desktop only) — only navigate when current slide has nothing more to scroll
+  let wheelTimer = null;
+  document.addEventListener('wheel', (e) => {
+    if (lock || wheelTimer) return;
+    if (window.innerWidth < 1024) return;
+    if (Math.abs(e.deltaY) < 30 && Math.abs(e.deltaX) < 30) return;
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    const slide = slides[idx];
+    if (slide) {
+      const canScrollDown = slide.scrollTop + slide.clientHeight < slide.scrollHeight - 4;
+      const canScrollUp = slide.scrollTop > 4;
+      if (delta > 0 && canScrollDown) return; // let native scroll happen
+      if (delta < 0 && canScrollUp) return;
+    }
+    if (delta > 0) go(idx + 1);
+    else go(idx - 1);
+    wheelTimer = setTimeout(() => { wheelTimer = null; }, 800);
+  }, { passive: true });
+
+  // Touch swipe (mobile)
+  let tx = 0, ty = 0, swipeActive = false;
+  document.addEventListener('touchstart', (e) => {
+    tx = e.touches[0].clientX;
+    ty = e.touches[0].clientY;
+    swipeActive = !e.target.closest('input[type=range], .s6-calc');
+  }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (!swipeActive) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5){
+      go(dx < 0 ? idx + 1 : idx - 1);
+    }
+  }, { passive: true });
+
+  bar.style.setProperty('--p', 1 / total);
+
+  // ─── Calculator ───────────────────────────────────────────────
+  const fmtBRL = (v) => {
+    if (v >= 1_000_000) return 'R$ ' + (v / 1_000_000).toFixed(2).replace('.', ',') + ' M';
+    if (v >= 10_000) return 'R$ ' + Math.round(v / 1000).toLocaleString('pt-BR') + 'k';
+    return 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+  };
+  const fmtBRLfull = (v) => 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+
+  const iFat = document.getElementById('i-fat');
+  const iTic = document.getElementById('i-tic');
+  const iClt = document.getElementById('i-clt');
+  const vFat = document.getElementById('v-fat');
+  const vTic = document.getElementById('v-tic');
+  const vClt = document.getElementById('v-clt');
+  const oVol = document.getElementById('o-vol');
+  const oConv = document.getElementById('o-conv');
+  const oTic = document.getElementById('o-tic');
+  const oTotal = document.getElementById('o-total');
+  const oPct = document.getElementById('o-pct');
+  const oBar = document.getElementById('o-bar');
+
+  // Premissas (não exibidas ao usuário)
+  const ADESAO_DO_PUBLICO = 0.35;   // 35% do público CLT da loja adere
+  const MDR_INTERNAL = 0.035;       // 3,5% (meio da faixa 2,5–5%) — uso interno apenas
+  const UPLIFT_CONV = 0.20;         // +20% de conversão sobre vendas perdidas (estimadas em 25%)
+  const VENDAS_PERDIDAS = 0.25;
+  const UPLIFT_TICKET = 0.30;       // +30% de ticket sobre carrinhos OrigamiPay
+
+  function calc(){
+    const fat = parseInt(iFat.value, 10);
+    const tic = parseInt(iTic.value, 10);
+    const cltPct = parseInt(iClt.value, 10) / 100;
+
+    vFat.textContent = fmtBRLfull(fat);
+    vTic.textContent = fmtBRLfull(tic);
+    vClt.textContent = (cltPct * 100) + '%';
+
+    // Volume processado via OrigamiPay = faturamento × público CLT × adesão
+    const volOrigami = fat * cltPct * ADESAO_DO_PUBLICO;
+
+    // Receita adicional · conversão (sobre vendas que escapariam)
+    const upliftConv = fat * VENDAS_PERDIDAS * UPLIFT_CONV;
+
+    // Receita adicional · ticket
+    const upliftTic = volOrigami * UPLIFT_TICKET;
+
+    // Receita líquida adicional = uplifts - taxa interna sobre o volume processado
+    const receitaBruta = upliftConv + upliftTic;
+    const taxaInterna = volOrigami * MDR_INTERNAL;
+    const total = receitaBruta - taxaInterna;
+    const pct = (total / fat) * 100;
+
+    oVol.textContent = fmtBRL(volOrigami);
+    oConv.textContent = fmtBRL(upliftConv);
+    oTic.textContent = fmtBRL(upliftTic);
+    oTotal.textContent = fmtBRL(total);
+    oPct.textContent = '+' + pct.toFixed(1).replace('.', ',') + '%';
+
+    const barW = Math.min(Math.max(pct, 0) / 30, 1);
+    oBar.style.setProperty('--up', barW.toFixed(3));
+  }
+
+  [iFat, iTic, iClt].forEach(el => {
+    el.addEventListener('input', calc);
+    el.addEventListener('change', calc);
+  });
+  calc();
+
+})();
+</script>
+
+</body>
+</html>
